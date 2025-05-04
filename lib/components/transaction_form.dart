@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'adaptative_button.dart';
+import 'adaptative_textfield.dart';
+import 'adaptative_datepicker.dart';
 
 class TransactionForm extends StatefulWidget {
   final void Function(String, double, DateTime) onSubmit;
@@ -24,105 +26,52 @@ class _TransactionFormState extends State<TransactionForm> {
     widget.onSubmit(title, value, _selectedDate!);
   }
 
-  _showDatePicker() {
-    showDatePicker(
-      context: context,
-      firstDate: DateTime(2019),
-      lastDate: DateTime.now(),
-    ).then((pickedDate) {
-      if(pickedDate==null) return;
-      
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
-
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.grey.shade900,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: _titleController,
-              onSubmitted: (_) => _submitForm(),
-              //onChanged: (newValue) => titleController = newValue,
-              decoration: InputDecoration(
-                labelText: 'Título',
-                filled: true,
-                fillColor: Colors.grey.shade800,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                labelStyle: TextStyle(color: Colors.white70),
+    return SingleChildScrollView(
+      child: Card(
+        color: Colors.grey.shade900,
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 10,
+            right: 10,
+            left: 10,
+            // entendemos o tamanho que o teclado ocupa no form e agr pode dar scroll, mantendo os 10px finais do form
+            bottom: 10 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            children: <Widget>[
+              AdaptativeTextfield(
+                label: 'Título',
+                controller: _titleController,
+                onSubmitted: (_) => _submitForm(),
               ),
-              style: TextStyle(color: Colors.white70),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _valueController,
-              onSubmitted:
-                  (_) =>
-                      _submitForm(), // usamos o _ para ficar claro q n usaremos a var
-              //onChanged: (newValue) => valueController = newValue,
-              decoration: InputDecoration(
-                labelText: 'Valor',
-                filled: true,
-                fillColor: Colors.grey.shade800,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                labelStyle: TextStyle(color: Colors.white70),
+              SizedBox(height: 10),
+              AdaptativeTextfield(
+                label: 'Valor (R\$)',
+                controller: _valueController,
+                onSubmitted: (_) => _submitForm(),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
-              style: TextStyle(color: Colors.white70),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-            ),
-            SizedBox(height: 20),
-            Container(
-              height: 70,
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                    _selectedDate == null
-                    ? 'Nenhuma data selecionada!' 
-                    : 'Data: ${DateFormat('dd/MM/y').format(_selectedDate!)}'),
-                  ),
-                  TextButton(
-                    onPressed: _showDatePicker,
-                    child: Text(
-                      'Alterar Data',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+              AdaptativeDatePicker(
+                selectedDate: _selectedDate,
+                onDateChanged: (newDate){
+                  setState(() {
+                    _selectedDate = newDate;
+                  });
+                },),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AdaptativeButton(
+                    label: 'Nova Transação',
+                    onPressed: _submitForm,
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: _submitForm,
-                  child: Text(
-                    'Nova transação',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
